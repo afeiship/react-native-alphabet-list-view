@@ -1,0 +1,17 @@
+{
+  "name": "react-native-country-code-select",
+  "version": "0.0.1",
+  "description": "Country code select for react native",
+  "homepage": "https://github.com/afeiship/react-native-country-code-select",
+  "author": {
+    "name": "afei",
+    "email": "1290657123@qq.com"
+  },
+  "main": "src/index.js",
+  "license": "MIT",
+  "dependencies": {
+    "noop": "github:afeiship/noop",
+    "prop-types": "^15.6.1",
+    "react-native-stylekit": "github:afeiship/react-native-stylekit"
+  }
+}
