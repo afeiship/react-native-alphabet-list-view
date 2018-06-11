@@ -12,7 +12,13 @@ import styles from './styles';
 
 
 export default class extends Component {
-  static defaultProps = {};
+  static propTypes = {
+    items: PropTypes.array
+  };
+
+  static defaultProps = {
+    items: []
+  };
 
   get templateItem(inItem, inIndex) {
     return (
@@ -31,6 +37,7 @@ export default class extends Component {
   }
 
   render() {
+    const letters = items.map(item=>item.title);
     return (
       <View style={$style.center}>
         <View style={[$style.rel, $style.z2, styles.left]}>
@@ -41,7 +48,7 @@ export default class extends Component {
             stickySectionHeadersEnabled={true}
             renderItem={this.templateItem}
             renderSectionHeader={this.templateHeader}
-            sections={sections}
+            sections={items}
             keyExtractor={(item) => item.countryCode}
           />
         </View>
