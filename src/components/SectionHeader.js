@@ -15,10 +15,6 @@ export default class extends Component {
     updateTag: PropTypes.func
   };
 
-  static defaultProps = {
-    updateTag: noop
-  };
-
   componentDidMount() {
     this.props.updateTag && this.props.updateTag(this.root, this.props.sectionId);
   }
