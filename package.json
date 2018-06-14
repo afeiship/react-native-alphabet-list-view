@@ -13,8 +13,8 @@
     "next-js-core2": "github:afeiship/next-js-core2",
     "noop": "github:afeiship/noop",
     "prop-types": "^15.6.1",
-    "react": "^16.4.0",
-    "react-native": "^0.55.4",
+    "react": "*",
+    "react-native": "*",
     "react-native-stylekit": "github:afeiship/react-native-stylekit"
   }
 }
