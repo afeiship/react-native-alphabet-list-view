@@ -8,43 +8,63 @@ import {
 import noop from 'noop';
 import PropTypes from 'prop-types';
 import $style from 'react-native-stylekit';
-import styles from './styles';
+import style from './style';
 
 
 export default class extends Component {
   static propTypes = {
-    items: PropTypes.array
+    items: PropTypes.array,
+    value: PropTypes.any,
+    onChange: PropTypes.func
   };
 
   static defaultProps = {
-    items: []
+    items: [],
+    onChange: noop
   };
 
-  get templateItem(inItem, inIndex) {
+  templateItem = ({ item, index }) => {
+    const { value } = this.props;
+    const itemStyle = item.phoneCode === value ? nx.mix(style.item, { color: '#007AFF' }) : style.item;
     return (
-      <TouchableHighlight onPress={this._onPress.bind(this, inItem)}>
-        <Text style={[$style.bg_f, styles.item]} key={inIndex}>{inItem.countryName}({inItem.phoneCode})</Text>
+      <TouchableHighlight onPress={this._onPressItem.bind(this, item)}>
+        <Text
+          style={[$style.bg_f, itemStyle]}
+          key={index}>
+          {item.countryName}({item.phoneCode})
+        </Text>
       </TouchableHighlight>
     );
-  }
+  };
 
-  get templateHeader(inItem) {
+  templateHeader = ({ section: { title } }) => {
     return (
-      <View>
-        <Text>{inItem.title}</Text>
-      </View>
-    )
-  }
+      <Text style={style.header}>{title}</Text>
+    );
+  };
+
+  _onPressItem = (inItem) => {
+    const { onChange } = this.props;
+    onChange({ target:{ value: inItem }});
+  };
+
+  _onPressText = (inIndex) => {
+    this._list.scrollToLocation({
+      animated: true,
+      itemIndex: -1,
+      sectionIndex: inIndex
+    });
+  };
 
   render() {
-    const letters = items.map(item=>item.title);
+    const letters = items.map(item => item.title);
     return (
       <View style={$style.center}>
-        <View style={[$style.rel, $style.z2, styles.left]}>
+        <View style={[$style.rel, $style.z2, style.left]}>
           <SectionList
             onScrollToIndexFailed={nx.noop}
             stickyHeaderIndices
-            ref={(sec) => this._sec = sec}
+            ref={(list) => this._list = list}
             stickySectionHeadersEnabled={true}
             renderItem={this.templateItem}
             renderSectionHeader={this.templateHeader}
@@ -61,14 +81,14 @@ export default class extends Component {
             $style.b0,
             $style.col,
             $style.center,
-            styles.right
+            style.right
           ]}>
           {
             letters.map((item, index) => {
               return (
                 <TouchableOpacity key={item}
                   onPress={this._onPressText.bind(this, index)}>
-                  <Text style={[$style.tc, styles.lettter]}>{item}</Text>
+                  <Text style={[$style.tc, style.lettter]}>{item}</Text>
                 </TouchableOpacity>
               )
             })

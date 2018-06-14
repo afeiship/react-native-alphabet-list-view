@@ -1,4 +1,4 @@
-import { StyleSheet, } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
   item: {
@@ -23,7 +23,7 @@ export default StyleSheet.create({
     backgroundColor: '#F0EFF5',
   },
   lettter: {
-    color: '#007aff',
+    color: '#007AFF',
     fontSize: 12,
     paddingBottom: 3,
     width: 44,
