@@ -82,8 +82,8 @@ export default class SectionList extends Component {
     if (index >= this.props.sections.length) {
       return;
     }
-
-    if (this.lastSelectedIndex !== index && this.props.data[this.props.sections[index]].length) {
+    const sectionData = this.props.data[this.props.sections[index]];
+    if (this.lastSelectedIndex !== index && sectionData && sectionData.length) {
       this.lastSelectedIndex = index;
       this.onSectionSelect(this.props.sections[index - 1], true);
     }
