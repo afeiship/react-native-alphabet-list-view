@@ -9,15 +9,142 @@ import ReactNative, {
   View,
   NativeModules,
 } from 'react-native';
-import merge from 'merge';
 
+import nx from 'next-js-core2';
 import SectionHeader from './SectionHeader';
 import SectionList from './SectionList';
 import CellWrapper from './CellWrapper';
 
 const { UIManager } = NativeModules;
 
-export default class SelectableSectionsListView extends Component {
+export default class extends Component {
+  static propTypes = {
+    data: PropTypes.oneOfType([
+      PropTypes.array,
+      PropTypes.object,
+    ]).isRequired,
+
+    /**
+     * Whether to show the section listing or not
+     */
+    hideSectionList: PropTypes.bool,
+
+    /**
+     * Functions to provide a title for the section header and the section list
+     * items. If not provided, the section ids will be used (the keys from the data object)
+     */
+    getSectionTitle: PropTypes.func,
+    getSectionListTitle: PropTypes.func,
+
+    /**
+     * Function to sort sections. If not provided, the sections order will match data source
+     */
+    compareFunction: PropTypes.func,
+
+    /**
+     * Callback which should be called when a cell has been selected
+     */
+    onCellSelect: PropTypes.func,
+
+    /**
+     * Callback which should be called when the user scrolls to a section
+     */
+    onScrollToSection: PropTypes.func,
+
+    /**
+     * The cell element to render for each row
+     */
+    cell: PropTypes.func.isRequired,
+
+    /**
+     * A custom element to render for each section list item
+     */
+    sectionListItem: PropTypes.func,
+
+    /**
+     * A custom element to render for each section header
+     */
+    sectionHeader: PropTypes.func,
+
+    /**
+     * A custom element to render as footer
+     */
+    footer: PropTypes.func,
+
+    /**
+     * A custom element to render as header
+     */
+    header: PropTypes.func,
+
+    /**
+     * The height of the header element to render. Is required if a
+     * header element is used, so the positions can be calculated correctly
+     */
+    headerHeight: PropTypes.number,
+
+    /**
+     * A custom function to render as footer
+     */
+    renderHeader: PropTypes.func,
+
+    /**
+     * A custom function to render as header
+     */
+    renderFooter: PropTypes.func,
+
+    /**
+     * An object containing additional props, which will be passed
+     * to each cell component
+     */
+    cellProps: PropTypes.object,
+
+    /**
+     * The height of the section header component
+     */
+    sectionHeaderHeight: PropTypes.number.isRequired,
+
+    /**
+     * The height of the cell component
+     */
+    cellHeight: PropTypes.number.isRequired,
+
+    /**
+     * Whether to determine the y postion to scroll to by calculating header and
+     * cell heights or by using the UIManager to measure the position of the
+     * destination element. This is an exterimental feature
+     */
+    useDynamicHeights: PropTypes.bool,
+
+    /**
+     * Whether to set the current y offset as state and pass it to each
+     * cell during re-rendering
+     */
+    updateScrollState: PropTypes.bool,
+
+    /**
+     * Styles to pass to the container
+     */
+    style: PropTypes.oneOfType([
+      PropTypes.number,
+      PropTypes.object,
+    ]),
+
+    /**
+     * Styles to pass to the section list container
+     */
+    sectionListStyle: PropTypes.oneOfType([
+      PropTypes.number,
+      PropTypes.object,
+    ]),
+
+    /**
+     * Selector styles
+     */
+    sectionListFontStyle: PropTypes.oneOfType([
+      PropTypes.number,
+      PropTypes.object,
+    ])
+  }
 
   constructor(props, context) {
     super(props, context);
@@ -54,7 +181,7 @@ export default class SelectableSectionsListView extends Component {
   componentDidMount() {
     // push measuring into the next tick
     setTimeout(() => {
-      UIManager.measure(ReactNative.findNodeHandle(this.refs.view), (x,y,w,h) => {
+      UIManager.measure(ReactNative.findNodeHandle(this.refs.view), (x, y, w, h) => {
         this.containerHeight = h;
         if (this.props.contentInset && this.props.data && this.props.data.length > 0) {
           this.scrollToSection(Object.keys(this.props.data)[0]);
@@ -101,16 +228,16 @@ export default class SelectableSectionsListView extends Component {
     let y = 0;
     let headerHeight = this.props.headerHeight || 0;
     y += headerHeight;
-    
-    if(this.props.contentInset) {
-        y -= this.props.contentInset.top - headerHeight
+
+    if (this.props.contentInset) {
+      y -= this.props.contentInset.top - headerHeight
     }
 
     if (!this.props.useDynamicHeights) {
       const cellHeight = this.props.cellHeight;
       let sectionHeaderHeight = this.props.sectionHeaderHeight;
       let keys = Object.keys(this.props.data);
-      if (typeof(this.props.compareFunction) === "function") {
+      if (typeof (this.props.compareFunction) === "function") {
         keys = keys.sort(this.props.compareFunction);
       }
       const index = keys.indexOf(section);
@@ -125,11 +252,12 @@ export default class SelectableSectionsListView extends Component {
       const maxY = this.totalHeight - this.containerHeight + headerHeight;
       y = y > maxY ? maxY : y;
 
-      this.refs.listview.scrollTo({ x:0, y, animated: true });
+      this.refs.listview.scrollTo({ x: 0, y, animated: true });
     } else {
-      UIManager.measureLayout(this.cellTagMap[section], ReactNative.findNodeHandle(this.refs.listview), () => {}, (x, y, w, h) => {
+      UIManager.measureLayout(this.cellTagMap[section], ReactNative.findNodeHandle(this.refs.listview), () => {
+      }, (x, y, w, h) => {
         y = y - this.props.sectionHeaderHeight;
-        this.refs.listview.scrollTo({ x:0, y, animated: true });
+        this.refs.listview.scrollTo({ x: 0, y, animated: true });
       });
     }
 
@@ -171,7 +299,7 @@ export default class SelectableSectionsListView extends Component {
     index = parseInt(index, 10);
 
     const isFirst = index === 0;
-    const isLast = this.sectionItemCount && this.sectionItemCount[sectionId]-1 === index;
+    const isLast = this.sectionItemCount && this.sectionItemCount[sectionId] - 1 === index;
 
     const props = {
       isFirst,
@@ -217,7 +345,7 @@ export default class SelectableSectionsListView extends Component {
     let dataSource;
     let sections = Object.keys(data);
 
-    if (typeof(this.props.compareFunction) === "function") {
+    if (typeof (this.props.compareFunction) === "function") {
       sections = sections.sort(this.props.compareFunction);
     }
 
@@ -248,7 +376,7 @@ export default class SelectableSectionsListView extends Component {
       this.renderHeader :
       this.props.renderHeader;
 
-    const props = merge({}, this.props, {
+    const props = nx.mix({}, this.props, {
       onScroll: this.onScroll,
       onScrollAnimationEnd: this.onScrollAnimationEnd,
       dataSource,
@@ -261,7 +389,7 @@ export default class SelectableSectionsListView extends Component {
     props.style = void 0;
 
     return (
-      <View ref="view" style={[styles.container, this.props.style]}>
+      <View ref="view" style={[{ flex: 1 }, this.props.style]}>
         <ListView
           ref="listview"
           {...props}
@@ -270,137 +398,4 @@ export default class SelectableSectionsListView extends Component {
       </View>
     );
   }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1
-  }
-});
-
-const stylesheetProp = PropTypes.oneOfType([
-  PropTypes.number,
-  PropTypes.object,
-]);
-
-SelectableSectionsListView.propTypes = {
-  /**
-   * The data to render in the listview
-   */
-  data: PropTypes.oneOfType([
-    PropTypes.array,
-    PropTypes.object,
-  ]).isRequired,
-
-  /**
-   * Whether to show the section listing or not
-   */
-  hideSectionList: PropTypes.bool,
-
-  /**
-   * Functions to provide a title for the section header and the section list
-   * items. If not provided, the section ids will be used (the keys from the data object)
-   */
-  getSectionTitle: PropTypes.func,
-  getSectionListTitle: PropTypes.func,
-
-  /**
-   * Function to sort sections. If not provided, the sections order will match data source
-   */
-  compareFunction: PropTypes.func,
-
-  /**
-   * Callback which should be called when a cell has been selected
-   */
-  onCellSelect: PropTypes.func,
-
-  /**
-   * Callback which should be called when the user scrolls to a section
-   */
-  onScrollToSection: PropTypes.func,
-
-  /**
-   * The cell element to render for each row
-   */
-  cell: PropTypes.func.isRequired,
-
-  /**
-   * A custom element to render for each section list item
-   */
-  sectionListItem: PropTypes.func,
-
-  /**
-   * A custom element to render for each section header
-   */
-  sectionHeader: PropTypes.func,
-
-  /**
-   * A custom element to render as footer
-   */
-  footer: PropTypes.func,
-
-  /**
-   * A custom element to render as header
-   */
-  header: PropTypes.func,
-
-  /**
-   * The height of the header element to render. Is required if a
-   * header element is used, so the positions can be calculated correctly
-   */
-  headerHeight: PropTypes.number,
-
-  /**
-   * A custom function to render as footer
-   */
-  renderHeader: PropTypes.func,
-
-  /**
-   * A custom function to render as header
-   */
-  renderFooter: PropTypes.func,
-
-  /**
-   * An object containing additional props, which will be passed
-   * to each cell component
-   */
-  cellProps: PropTypes.object,
-
-  /**
-   * The height of the section header component
-   */
-  sectionHeaderHeight: PropTypes.number.isRequired,
-
-  /**
-   * The height of the cell component
-   */
-  cellHeight: PropTypes.number.isRequired,
-
-  /**
-   * Whether to determine the y postion to scroll to by calculating header and
-   * cell heights or by using the UIManager to measure the position of the
-   * destination element. This is an exterimental feature
-   */
-  useDynamicHeights: PropTypes.bool,
-
-  /**
-   * Whether to set the current y offset as state and pass it to each
-   * cell during re-rendering
-   */
-  updateScrollState: PropTypes.bool,
-
-  /**
-   * Styles to pass to the container
-   */
-  style: stylesheetProp,
-
-  /**
-   * Styles to pass to the section list container
-   */
-  sectionListStyle: stylesheetProp,
-
-  /**
-   * Selector styles
-   */
-  sectionListFontStyle: stylesheetProp,
 };

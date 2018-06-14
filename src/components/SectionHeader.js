@@ -2,50 +2,33 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import ReactNative, {
-  StyleSheet,
-  View,
-  Text,
-  NativeModules
-} from 'react-native';
+import ReactNative, { View, Text } from 'react-native';
+import noop from 'noop';
 
-export default class SectionHeader extends Component {
+export default class extends Component {
+  static propTypes = {
+    sectionId: PropTypes.oneOfType([
+      PropTypes.number,
+      PropTypes.string
+    ]),
+    component: PropTypes.func,
+    updateTag: PropTypes.func
+  };
+
+  static defaultProps = {
+    updateTag: noop
+  };
 
   componentDidMount() {
-    this.props.updateTag && this.props.updateTag(ReactNative.findNodeHandle(this.refs.view), this.props.sectionId);
+    this.props.updateTag && this.props.updateTag(this.root, this.props.sectionId);
   }
 
   render() {
     const SectionComponent = this.props.component;
-    const content = SectionComponent ?
-      <SectionComponent {...this.props} /> :
-      <Text>{this.props.title}</Text>;
+    const children = SectionComponent ? <SectionComponent {...this.props} /> : <Text>{this.props.title}</Text>;
 
     return (
-      <View ref="view">
-        {content}
-      </View>
+      <View ref={(root) => this.root = root} children={children} />
     );
   }
 }
-
-SectionHeader.propTypes = {
-
-  /**
-   * The id of the section
-   */
-  sectionId: PropTypes.oneOfType([
-    PropTypes.number,
-    PropTypes.string
-  ]),
-
-  /**
-   * A component to render for each section item
-   */
-  component: PropTypes.func,
-
-  /**
-   * A function used to propagate the root nodes handle back to the parent
-   */
-  updateTag: PropTypes.func
-};
